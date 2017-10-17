@@ -35,8 +35,8 @@ void thread_main(Map &map, Person &person) {
 			map.print();
 		}
 
-		line = person.getX();
-		column = person.getY();
+		line = person.getY();
+		column = person.getX();
 	}
 	{ // We're at the exit
 		auto &oldcell = map.getCell(column, line);
