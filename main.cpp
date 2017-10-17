@@ -28,6 +28,8 @@ void thread_main(Map &map, Person &person) {
 			person.setX(newcolumn);
 			person.setY(newline);
 
+			line = person.getY();
+			column = person.getX();
 			std::cout << "line: " << line << ", column: " << column << std::endl;
 		}
 		{
@@ -35,8 +37,7 @@ void thread_main(Map &map, Person &person) {
 			map.print();
 		}
 
-		line = person.getY();
-		column = person.getX();
+
 	}
 	{ // We're at the exit
 		auto &oldcell = map.getCell(column, line);
