@@ -3,11 +3,11 @@
 #include <random>
 #include <ctime>
 #include <thread>
-#include <shared_mutex>
+#include <mutex>
 
 #include "Map.h"
 
-static std::shared_mutex mt;
+static std::mutex mt;
 
 void thread_main(Map &map, Person &person) {
 	int column = person.getX();
@@ -21,7 +21,6 @@ void thread_main(Map &map, Person &person) {
 		auto newline = newperson.second;
 
 		{
-			//std::lock_guard lk(mt); // write-lock
 			auto &oldcell = map.getCell(column, line);
 			auto &newcell = map.getCell(newcolumn, newline);
 			oldcell.depart();
@@ -32,7 +31,7 @@ void thread_main(Map &map, Person &person) {
 			std::cout << "line: " << line << ", column: " << column << std::endl;
 		}
 		{
-			std::lock_guard lk(mt);
+			std::lock_guard<std::mutex> lk(mt);
 			map.print();
 		}
 
@@ -40,7 +39,6 @@ void thread_main(Map &map, Person &person) {
 		column = person.getY();
 	}
 	{ // We're at the exit
-		std::lock_guard lk(mt); // write-lock
 		auto &oldcell = map.getCell(column, line);
 		oldcell.depart();
 		person.setX(0);
@@ -49,7 +47,7 @@ void thread_main(Map &map, Person &person) {
 	}
 }
 
-void init_threads(auto &threads, auto &map) {
+void init_threads(std::vector<std::thread> &threads, Map &map) {
 	std::cout << map.getPeople().size() << std::endl;
 	for (auto &person: map.getPeople()) {
 		std::cout << "ee" << std::endl;
