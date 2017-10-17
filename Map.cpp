@@ -1,58 +1,55 @@
 #include "Map.h"
 
 #include <iostream>
+#include <algorithm>
 #include <cmath>
 
 Map::Map() {
 }
 
-void Map::init(int sqrtpeople) {
+std::vector<Person> Map::init(int sqrtpeople) {
 	auto seed = time(0);
-	auto people = 1 << sqrtpeople; // 2^sqrtpeople
-	std::cout << "Seed: " << seed << ", people = " << people << std::endl;
+	auto people_count = 1 << sqrtpeople; // 2^sqrtpeople
+	std::cout << "Seed: " << seed << ", people = " << people_count << std::endl;
 	std::srand(seed);
 
-	for (auto i = 0; i < people; i++) {
-		auto line = std::rand() % LINES;
-		auto column = std::rand() % COLUMNS;
-		if (!map.at(line).at(column))
-			map[line][column] = true;
-	}
+	for (auto i = 0; i < people_count; i++) {
+		auto line = std::rand() % lines;
+		auto column = std::rand() % columns;
 
-}
-
-std::vector<std::pair<int, int>> Map::getPeople() {
-	std::vector<std::pair<int, int>> people;
-	for (auto i = 0; i < map.size(); i++) {
-		auto line = map[i]; // no boundary check, for loop shouldn't go over
-		for (auto j = 0; j < line.size(); j++) {
-			auto cell = line[j]; // same
-			if (cell)
-				people.emplace_back(i, j);
+		Person person = {column, line};
+		if (std::find(people.begin(), people.end(), person) == people.end()) {
+			people.emplace_back(person);
+			map[line][column].arrive();
 		}
 	}
+
 	return people;
 }
 
 void Map::print() {
 	std::cout << "#  ";
-	for (auto i = 0; i < COLUMNS - 1; i++) std::cout << '#';
+	for (auto i = 0; i < columns - 1; i++) std::cout << '#';
 	std::cout << std::endl;
 
 	{
 		//std::shared_lock lk(mt); // read-lock unused
 
-		for (const auto &line: map) {
+		for (auto i = 0; i < map.size(); i++) {
 			std::cout << '#';
-			for (const auto &cell: line) {
-				if (cell) std::cout << 'x';
-				else std::cout << '.';
+
+			for (auto j = 0; j < map[i].size(); j++) {
+				Person person = {i, j};
+				if (std::find(people.begin(), people.end(), person) != people.end())
+					std::cout << 'x';
+				else
+					std::cout << '.';
 			}
 			std::cout << '#' << std::endl;
 		}
 	}
 
-	for (auto i = 0; i < COLUMNS + 2; i++) std::cout << '#';
+	for (auto i = 0; i < columns + 2; i++) std::cout << '#';
 	std::cout << std::endl;
 }
 
@@ -79,11 +76,7 @@ std::pair<int, int> Map::movePerson(int x, int y, Direction d) {
 	}
 }
 
-void Map::move(bool &from, bool &to) {
-	std::swap(from, to);
-}
-
-bool &Map::getCell(int x, int y) {
+Cell &Map::getCell(int x, int y) {
 	return map.at(y).at(x);
 }
 
@@ -110,3 +103,6 @@ Direction Map::computeDirection(int x, int y) {
 	}
 }
 
+std::vector<Person> &Map::getPeople() {
+	return people;
+}

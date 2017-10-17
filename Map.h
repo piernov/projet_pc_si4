@@ -4,24 +4,26 @@
 #include <array>
 #include <vector>
 
+#include "Cell.h"
 #include "Direction.h"
-
-#define LINES 128
-#define COLUMNS 512
+#include "Person.h"
 
 class Map {
 public:
 	Map();
-	void init(int sqrtpeople);
-	std::vector<std::pair<int, int>> getPeople();
+	std::vector<Person> init(int sqrtpeople);
+	std::vector<Person> &getPeople();
 	std::pair<int, int> movePerson(int x, int y, Direction d);
-	void move(bool &from, bool &to);
-	bool &getCell(int x, int y);
+	Cell &getCell(int x, int y);
 	Direction computeDirection(int x, int y);
 
 	void print();
 private:
-	std::array<std::array<bool, COLUMNS>, LINES> map{};
+	static const int lines = 128;
+	static const int columns = 512;
+
+	std::array<std::array<Cell, columns>, lines> map{};
+	std::vector<Person> people{};
 	std::array<std::pair<int, int>, 2> mapExit = {{ { 0, 0 }, { 1, 0} }};
 
 };

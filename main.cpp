@@ -9,8 +9,11 @@
 
 static std::shared_mutex mt;
 
-void thread_main(Map &map, int line, int column) {
-	while (line != 0 /*|| column > 2*/) { // algorithm only go north for now
+void thread_main(Map &map, Person &person) {
+	int column = person.getX();
+	int line = person.getY();
+
+	while (line != 0 || column > 2) { // algorithm only go north for now
 		auto direction = map.computeDirection(column, line);
 
 		auto newperson = map.movePerson(column, line, direction);
@@ -18,11 +21,14 @@ void thread_main(Map &map, int line, int column) {
 		auto newline = newperson.second;
 
 		{
-			std::lock_guard lk(mt); // write-lock
+			//std::lock_guard lk(mt); // write-lock
 			auto &oldcell = map.getCell(column, line);
 			auto &newcell = map.getCell(newcolumn, newline);
-			if (newcell) continue;
-			map.move(oldcell, newcell);
+			oldcell.depart();
+			newcell.arrive();
+			person.setX(newcolumn);
+			person.setY(newline);
+
 			std::cout << "line: " << line << ", column: " << column << std::endl;
 		}
 		{
@@ -30,21 +36,25 @@ void thread_main(Map &map, int line, int column) {
 			map.print();
 		}
 
-		line = newline;
-		column = newcolumn;
+		line = person.getX();
+		column = person.getY();
 	}
 	{ // We're at the exit
 		std::lock_guard lk(mt); // write-lock
 		auto &oldcell = map.getCell(column, line);
-		auto newcell = false;
-		map.move(oldcell, newcell);
+		oldcell.depart();
+		person.setX(0);
+		person.setY(0);
 		std::cout << "Thread finished!" << std::endl;
 	}
 }
 
 void init_threads(auto &threads, auto &map) {
-	for (const auto &person: map.getPeople())
-		threads.emplace_back(thread_main, std::ref(map), person.first, person.second);
+	std::cout << map.getPeople().size() << std::endl;
+	for (auto &person: map.getPeople()) {
+		std::cout << "ee" << std::endl;
+		threads.emplace_back(thread_main, std::ref(map), std::ref(person));
+	}
 }
 
 int main(int argc, char* argv[]) {

@@ -5,7 +5,9 @@ project(projet_pc_si4)
 add_definitions("-g -ansi -Wall -Wextra -Wold-style-cast -std=c++1z") 
 
 add_executable(main
+	Cell.cpp
 	Map.cpp
+	Person.cpp
 	main.cpp
 )
 
