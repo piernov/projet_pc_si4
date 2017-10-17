@@ -23,8 +23,8 @@ void thread_main(Map &map, Person &person) {
 		{
 			auto &oldcell = map.getCell(column, line);
 			auto &newcell = map.getCell(newcolumn, newline);
-			oldcell.depart();
-			newcell.arrive();
+			oldcell.arrive();
+			newcell.depart();
 			person.setX(newcolumn);
 			person.setY(newline);
 

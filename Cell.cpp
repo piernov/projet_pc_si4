@@ -4,9 +4,26 @@ Cell::Cell() {
 }
 
 void Cell::arrive() {
-	state = true;
+	{
+		std::unique_lock<std::mutex> lk(mt);
+		cv.wait(lk, [this]() { return !state; });
+
+		state = true;
+
+		lk.unlock();
+		cv.notify_all();
+	}
 }
 
 void Cell::depart() {
-	state = false;
+	{
+		std::unique_lock<std::mutex> lk(mt);
+		lk.lock();
+		//cv.wait(lk, [this]() { return !state; });
+
+		state = true;
+
+		lk.unlock();
+		cv.notify_all();
+	}
 }
