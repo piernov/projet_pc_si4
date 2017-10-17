@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 
 project(projet_pc_si4)
 
-add_definitions("-g -ansi -Wall -Wextra -Wold-style-cast -std=c++1z") 
+add_definitions("-g -ansi -Wall -Wextra -Wold-style-cast -std=c++1z")
 
 add_executable(main
 	main.cpp
