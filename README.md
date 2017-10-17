@@ -1,1 +1,1 @@
-# projet_pc_si4
+# Projet programmation concurrente SI4
