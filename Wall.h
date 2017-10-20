@@ -13,6 +13,10 @@ class Wall : public Space {
 public:
 	bool isWall() override;
 
+
+	void arrive() override;
+
+	void depart() override;
 	std::ostream &operator<<(std::ostream &os);
 	std::ostream &print(std::ostream &os) override ;
 

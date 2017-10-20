@@ -1,5 +1,6 @@
 #include "Map.h"
 #include "Cell.h"
+#include "Wall.h"
 
 #include <iostream>
 #include <algorithm>
@@ -18,6 +19,8 @@ std::vector<Person> Map::init(int sqrtpeople) {
 		}
 
 	}
+
+	makeWall(4,4,1,1);
 	auto seed = time(0);
 	auto people_count = 1 << sqrtpeople; // 2^sqrtpeople
 	std::cout << "Seed: " << seed << ", people = " << people_count << std::endl;
@@ -106,11 +109,21 @@ std::vector<Person> &Map::getPeople() {
 }
 
 int Map::checkDirection(int x, int y, int d) {
-	for (;; ++d) {
+	for (;; d = (d+1)%3) {
 		std::pair<int, int> coor = movePerson(x, y, d);
 		Space *space = map[coor.second][coor.first];
 		if (space != nullptr && !space->isWall())
 			break;
 	}
 	return d;
+}
+
+void Map::makeWall(int length, int width, int x, int y) {
+	for (int i = y; i < map.size() && i < y + length; ++i) {
+		for (int j = x; j < map.at(i).size() && j < x + width; ++j) {
+			Wall* wall = new Wall();
+			map.at(i).at(j) = wall;
+		}
+	}
+
 }

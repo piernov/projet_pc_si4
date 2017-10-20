@@ -17,3 +17,11 @@ std::ostream &Wall::print(std::ostream &os) {
 	os << "1";
 	return os;
 }
+
+void Wall::arrive() {
+
+}
+
+void Wall::depart() {
+
+}

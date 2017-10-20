@@ -18,6 +18,7 @@ public:
 	int checkDirection(int x, int y, int d);
 	Space * getCell(int x, int y);
 	int computeDirection(int x, int y);
+	void makeWall(int length, int width, int x, int y);
 
 	void print();
 private:
