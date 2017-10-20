@@ -14,9 +14,10 @@ public:
 	Map();
 	std::vector<Person> init(int sqrtpeople);
 	std::vector<Person> &getPeople();
-	std::pair<int, int> movePerson(int x, int y, Direction d);
+	std::pair<int, int> movePerson(int x, int y, int d);
+	int checkDirection(int x, int y, int d);
 	Space * getCell(int x, int y);
-	Direction computeDirection(int x, int y);
+	int computeDirection(int x, int y);
 
 	void print();
 private:

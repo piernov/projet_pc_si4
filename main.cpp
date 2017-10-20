@@ -16,6 +16,8 @@ void thread_main(Map &map, Person &person) {
 	while (line != 0 || column > 2) { // algorithm only go north for now
 		auto direction = map.computeDirection(column, line);
 
+		direction = map.checkDirection(column, line, direction);
+
 		auto newperson = map.movePerson(column, line, direction);
 		auto newcolumn = newperson.first;
 		auto newline = newperson.second;

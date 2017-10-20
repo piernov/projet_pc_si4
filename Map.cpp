@@ -6,13 +6,14 @@
 #include <array>
 #include <cmath>
 
+
 Map::Map() {
 }
 
 std::vector<Person> Map::init(int sqrtpeople) {
 	for (int i = 0; i < map.size(); ++i) {
 		for (int j = 0; j < map[i].size(); ++j) {
-			Cell* cell = new Cell();
+			Cell *cell = new Cell();
 			map[i][j] = cell;
 		}
 
@@ -60,34 +61,24 @@ void Map::print() {
 	std::cout << std::endl;
 }
 
-std::pair<int, int> Map::movePerson(int x, int y, Direction d) {
+std::pair<int, int> Map::movePerson(int x, int y, int d) {
 	switch (d) {
-		case Direction::N:
+		case Direction::N :
 			return {x, y - 1};
-		case Direction::NE:
-			return {x + 1, y - 1};
-		case Direction::E:
-			return {x + 1, y};
-		case Direction::SE:
-			return {x + 1, y + 1};
-		case Direction::S:
-			return {x, y + 1};
-		case Direction::SW:
-			return {x - 1, y + 1};
-		case Direction::W:
-			return {x - 1, y};
-		case Direction::NW:
+		case Direction::NW :
 			return {x - 1, y - 1};
+		case Direction::W :
+			return {x - 1, y};
 		default:
 			return {x, y};
 	}
 }
 
-Space * Map::getCell(int x, int y) {
+Space *Map::getCell(int x, int y) {
 	return map.at(y).at(x);
 }
 
-Direction Map::computeDirection(int x, int y) {
+int Map::computeDirection(int x, int y) {
 	// Handle only one exit pixel
 	auto exit0 = mapExit.at(0);
 	auto exit_x = exit0.first;
@@ -112,4 +103,14 @@ Direction Map::computeDirection(int x, int y) {
 
 std::vector<Person> &Map::getPeople() {
 	return people;
+}
+
+int Map::checkDirection(int x, int y, int d) {
+	for (;; ++d) {
+		std::pair<int, int> coor = movePerson(x, y, d);
+		Space *space = map[coor.second][coor.first];
+		if (space != nullptr && !space->isWall())
+			break;
+	}
+	return d;
 }
