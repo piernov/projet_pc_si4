@@ -88,9 +88,7 @@ int Map::computeDirection(int x, int y) {
 	auto exit_y = exit0.second;
 
 	float angle = std::atan2(y - exit_y, x - exit_x) * 180 / 3.14159;
-	std::cout << "x: " << x << "y: " << y << " angle: " << angle << " card: " << angle / 45 << std::endl;
 	auto card = static_cast<int>(std::round(angle / 45));
-	std::cout << "card : " << card << std::endl;
 
 	switch (card) {
 		case 0:
