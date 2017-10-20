@@ -65,7 +65,7 @@ void init_threads(std::vector<std::thread> &threads, Map &map) {
 }
 
 void run_threads(std::vector<std::thread> &threads, Map map) {
-	static std::clock_t c_start = std::clock();
+	std::clock_t c_start = std::clock();
 	auto t_start = std::chrono::high_resolution_clock::now();
 
 	init_threads(threads, map);
