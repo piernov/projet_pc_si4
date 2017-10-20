@@ -20,7 +20,10 @@ std::vector<Person> Map::init(int sqrtpeople) {
 
 	}
 
-	makeWall(4,4,1,1);
+	makeWall(30,27,45,45);
+	makeWall(15,40,70,14);
+	makeWall(30,30,250,50);
+	makeWall(10,10,50,1);
 	auto seed = time(0);
 	auto people_count = 1 << sqrtpeople; // 2^sqrtpeople
 	std::cout << "Seed: " << seed << ", people = " << people_count << std::endl;
