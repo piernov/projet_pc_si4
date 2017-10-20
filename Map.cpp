@@ -26,15 +26,15 @@ std::vector<Person> Map::init(int sqrtpeople) {
 	std::cout << "Seed: " << seed << ", people = " << people_count << std::endl;
 	std::srand(seed);
 
-	for (auto i = 0; i < people_count; i++) {
+	while (people_count > 0) {
 		auto line = std::rand() % lines;
 		auto column = std::rand() % columns;
 
 		Person person = {column, line};
-		if (std::find(people.begin(), people.end(), person) == people.end()) {
+		if (std::find(people.begin(), people.end(), person) == people.end() && !map[line][column]->isWall()) {
 			people.emplace_back(person);
-			if (map[line][column] != nullptr)
-				map[line][column]->arrive();
+			people_count--;
+			map[line][column]->arrive();
 		}
 	}
 
@@ -88,9 +88,7 @@ int Map::computeDirection(int x, int y) {
 	auto exit_y = exit0.second;
 
 	float angle = std::atan2(y - exit_y, x - exit_x) * 180 / 3.14159;
-	std::cout << "x: " << x << "y: " << y << " angle: " << angle << " card: " << angle / 45 << std::endl;
 	auto card = static_cast<int>(std::round(angle / 45));
-	std::cout << "card : " << card << std::endl;
 
 	switch (card) {
 		case 0:
