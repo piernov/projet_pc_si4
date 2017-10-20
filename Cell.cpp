@@ -18,12 +18,32 @@ void Cell::arrive() {
 void Cell::depart() {
 	{
 		std::unique_lock<std::mutex> lk(mt);
-		lk.lock();
 		//cv.wait(lk, [this]() { return !state; });
 
-		state = true;
+		state = false;
 
 		lk.unlock();
 		cv.notify_all();
 	}
 }
+
+bool Cell::isWall() {
+	return false;
+}
+
+std::ostream &Cell::operator<<(std::ostream &os) {
+	if (state)
+		os << "P";
+	else
+		os << "C";
+	return os;
+}
+
+std::ostream &Cell::print(std::ostream &os) {
+	if (state)
+		os << "x";
+	else
+		os << ".";
+	return os;
+}
+

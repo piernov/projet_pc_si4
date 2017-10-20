@@ -21,10 +21,12 @@ void thread_main(Map &map, Person &person) {
 		auto newline = newperson.second;
 
 		{
-			auto &oldcell = map.getCell(column, line);
-			auto &newcell = map.getCell(newcolumn, newline);
-			newcell.arrive();
-			oldcell.depart();
+			Space* oldcell = map.getCell(column, line);
+			Space* newcell = map.getCell(newcolumn, newline);
+			if (newcell != nullptr)
+				newcell->arrive();
+			if (oldcell != nullptr)
+				oldcell->depart();
 			person.setX(newcolumn);
 			person.setY(newline);
 
@@ -40,8 +42,9 @@ void thread_main(Map &map, Person &person) {
 
 	}
 	{ // We're at the exit
-		auto &oldcell = map.getCell(column, line);
-		oldcell.depart();
+		Space* oldcell = map.getCell(column, line);
+		if (oldcell != nullptr)
+			oldcell->depart();
 		person.setX(0);
 		person.setY(0);
 		std::cout << "Thread finished!" << std::endl;

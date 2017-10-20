@@ -3,12 +3,22 @@
 
 #include <condition_variable>
 #include <mutex>
+#include <ostream>
+#include "Space.h"
 
-class Cell {
+class Cell : public Space {
 public:
 	Cell();
-	void arrive();
-	void depart();
+
+	void arrive() override;
+
+	void depart() override;
+
+	bool isWall() override;
+
+	std::ostream &operator<<(std::ostream &os);
+	std::ostream &print(std::ostream &os) override ;
+
 private:
 	bool state = false;
 	std::mutex mt;
