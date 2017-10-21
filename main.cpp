@@ -2,21 +2,26 @@
 #include <vector>
 #include <random>
 #include <ctime>
-#include <thread>
-#include <mutex>
+//#include <thread>
+//#include <mutex>
+#include <pthread.h>
 #include <iomanip>
 #include <algorithm>
 
 #include "Map.h"
 
-static std::mutex mt;
+//static std::mutex mt;
+static pthread_mutex_t mt;
 
 static bool benchmark_mode = false;
 
 static std::vector<double> cputimes;
 static std::vector<double> walltimes;
 
-void thread_main(Map &map, Person &person) {
+void thread_main(std::pair<Map*, Person*> args) {
+	auto map = *args.first;
+	auto person = *args.second;
+
 	int column = person.getX();
 	int line = person.getY();
 
@@ -43,8 +48,10 @@ void thread_main(Map &map, Person &person) {
 			column = person.getX();
 		}
 		if (!benchmark_mode) {
-			std::lock_guard<std::mutex> lk(mt);
+			//std::lock_guard<std::mutex> lk(mt);
+			pthread_mutex_lock(&mt);
 			map.print();
+			pthread_mutex_unlock(&mt);
 		}
 
 
@@ -58,19 +65,26 @@ void thread_main(Map &map, Person &person) {
 	}
 }
 
-void init_threads(std::vector<std::thread> &threads, Map &map) {
+void init_threads(std::vector<pthread_t> &threads, Map &map) {
 	for (auto &person: map.getPeople()) {
-		threads.emplace_back(thread_main, std::ref(map), std::ref(person));
+		//threads.emplace_back(thread_main, std::ref(map), std::ref(person));
+		pthread_t thread;
+		auto args = new std::pair<Map*, Person*>(&map, &person);
+		if (pthread_create(&thread, NULL, (void *(*)(void *))(thread_main), static_cast<void *>(args))!=0) {
+			std::cerr << "pthread_create" << std::endl;
+			exit(1);
+		}
+		threads.push_back(std::move(thread));
 	}
 }
 
-void run_threads(std::vector<std::thread> &threads, Map map) {
+void run_threads(std::vector<pthread_t> &threads, Map map) {
 	std::clock_t c_start = std::clock();
 	auto t_start = std::chrono::high_resolution_clock::now();
 
 	init_threads(threads, map);
 	for (auto &thread: threads)
-		thread.join();
+		pthread_join(thread, NULL);
 
 	threads.clear();
 
@@ -87,6 +101,12 @@ void run_threads(std::vector<std::thread> &threads, Map map) {
 int main(int argc, char* argv[]) {
 	// Map declaration
 	Map map;
+
+	// Init display mutex
+	if(pthread_mutex_init(&mt, NULL) != 0) {
+		std::cerr << "pthread_mutex_init" << std::endl;
+		exit(1);
+	}
 
 	// Command line parameters parsing
 	int threads_mode = 0;
@@ -114,7 +134,7 @@ int main(int argc, char* argv[]) {
 
 	// Thread pool
 	const auto threads_count = 1 << person_count;
-	std::vector<std::thread> threads;
+	std::vector<pthread_t> threads;
 	threads.reserve(threads_count);
 
 

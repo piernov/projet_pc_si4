@@ -1,29 +1,47 @@
+#include <iostream>
+
 #include "Cell.h"
 
 Cell::Cell() {
+	if(pthread_mutex_init(&mutex, NULL) != 0) {
+		std::cerr << "pthread_mutex_init" << std::endl;
+		exit(1);
+	}
+	if(pthread_cond_init(&condition, NULL) != 0) {
+		std::cerr << "pthread_cond_init" << std::endl;
+		exit(1);
+	}
 }
 
 void Cell::arrive() {
 	{
-		std::unique_lock<std::mutex> lk(mt);
-		cv.wait(lk, [this]() { return !state; });
+//		std::unique_lock<std::mutex> lk(mt);
+		pthread_mutex_lock(&mutex);
+		while (state) pthread_cond_wait(&condition, &mutex);
+		//cv.wait(lk, [this]() { return !state; });
 
 		state = true;
 
-		lk.unlock();
-		cv.notify_all();
+		pthread_mutex_unlock(&mutex);
+		pthread_cond_broadcast(&condition);
+
+		//lk.unlock();
+		//cv.notify_all();
 	}
 }
 
 void Cell::depart() {
 	{
-		std::unique_lock<std::mutex> lk(mt);
+		//std::unique_lock<std::mutex> lk(mt);
+		pthread_mutex_lock(&mutex);
 		//cv.wait(lk, [this]() { return !state; });
 
 		state = false;
 
-		lk.unlock();
-		cv.notify_all();
+		pthread_mutex_unlock(&mutex);
+		pthread_cond_broadcast(&condition);
+		//lk.unlock();
+		//cv.notify_all();
 	}
 }
 
