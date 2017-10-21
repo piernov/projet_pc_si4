@@ -13,6 +13,11 @@ Cell::Cell() {
 	}
 }
 
+Cell::~Cell() {
+	pthread_cond_destroy(&condition);
+	pthread_mutex_destroy(&mutex);
+}
+
 void Cell::arrive() {
 	{
 //		std::unique_lock<std::mutex> lk(mt);

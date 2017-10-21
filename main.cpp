@@ -172,5 +172,8 @@ int main(int argc, char* argv[]) {
 		std::cout << "Wall clock time passed: " << walltimemean << " ms" << std::endl;
 	}
 
+	// Destroy display mutex
+	pthread_mutex_destroy(&mt);
+
 	return 0;
 }

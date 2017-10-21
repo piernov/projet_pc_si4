@@ -11,6 +11,7 @@
 class Cell : public Space {
 public:
 	Cell();
+	~Cell();
 
 	void arrive() override;
 
