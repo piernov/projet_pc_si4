@@ -2,6 +2,7 @@
 #include <vector>
 #include <random>
 #include <ctime>
+#include <chrono>
 //#include <thread>
 //#include <mutex>
 #include <pthread.h>
@@ -18,9 +19,9 @@ static bool benchmark_mode = false;
 static std::vector<double> cputimes;
 static std::vector<double> walltimes;
 
-void thread_main(std::pair<Map*, Person*> args) {
-	auto map = *args.first;
-	auto person = *args.second;
+void *thread_main(std::pair<Map*, Person*> *args) {
+	auto map = *(args->first);
+	auto person = *(args->second);
 
 	int column = person.getX();
 	int line = person.getY();
@@ -63,6 +64,10 @@ void thread_main(std::pair<Map*, Person*> args) {
 		person.setX(0);
 		person.setY(0);
 	}
+
+	delete args;
+	args = nullptr;
+	return nullptr;
 }
 
 void init_threads(std::vector<pthread_t> &threads, Map &map) {
@@ -70,7 +75,7 @@ void init_threads(std::vector<pthread_t> &threads, Map &map) {
 		//threads.emplace_back(thread_main, std::ref(map), std::ref(person));
 		pthread_t thread;
 		auto args = new std::pair<Map*, Person*>(&map, &person);
-		if (pthread_create(&thread, NULL, (void *(*)(void *))(thread_main), static_cast<void *>(args))!=0) {
+		if (pthread_create(&thread, NULL, reinterpret_cast<void *(*)(void *)>(thread_main), args)) {
 			std::cerr << "pthread_create" << std::endl;
 			exit(1);
 		}
