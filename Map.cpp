@@ -12,11 +12,13 @@ Map::Map() {
 }
 
 std::vector<Person> Map::init(int sqrtpeople) {
-	for (int i = 0; i < map.size(); ++i) {
-		for (int j = 0; j < map[i].size(); ++j) {
+	for (int i = 0; i < lines; ++i) {
+		std::vector<Space *> vec;
+		for (int j = 0; j < columns; ++j) {
 			Cell *cell = new Cell();
-			map[i][j] = cell;
+			vec.push_back(cell);
 		}
+		map.push_back(vec);
 
 	}
 

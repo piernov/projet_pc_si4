@@ -25,7 +25,7 @@ private:
 	static const int lines = 128;
 	static const int columns = 512;
 
-	std::array<std::array<Space*, columns>, lines> map;
+	std::vector<std::vector<Space*>> map;
 	std::vector<Person> people{};
 	std::array<std::pair<int, int>, 2> mapExit = {{ { 0, 0 }, { 1, 0} }};
 
