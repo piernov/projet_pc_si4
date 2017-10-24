@@ -22,7 +22,6 @@ void Cell::arrive() {
 	{
 		pthread_mutex_lock(&mutex);
 		while (state) pthread_cond_wait(&condition, &mutex);
-		//cv.wait(lk, [this]() { return !state; });
 
 		state = true;
 
