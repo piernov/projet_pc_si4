@@ -25,8 +25,8 @@ void Cell::arrive() {
 
 		state = true;
 
-		pthread_mutex_unlock(&mutex);
 		pthread_cond_broadcast(&condition);
+		pthread_mutex_unlock(&mutex);
 	}
 }
 
@@ -36,8 +36,8 @@ void Cell::depart() {
 
 		state = false;
 
-		pthread_mutex_unlock(&mutex);
 		pthread_cond_broadcast(&condition);
+		pthread_mutex_unlock(&mutex);
 	}
 }
 
