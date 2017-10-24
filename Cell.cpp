@@ -25,7 +25,6 @@ void Cell::arrive() {
 
 		state = true;
 
-		pthread_cond_broadcast(&condition);
 		pthread_mutex_unlock(&mutex);
 	}
 }
