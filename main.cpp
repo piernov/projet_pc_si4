@@ -3,15 +3,13 @@
 #include <random>
 #include <ctime>
 #include <chrono>
-//#include <thread>
-//#include <mutex>
 #include <pthread.h>
 #include <iomanip>
 #include <algorithm>
 
 #include "Map.h"
 
-//static std::mutex mt;
+
 static pthread_mutex_t mt;
 
 static bool benchmark_mode = false;
@@ -26,7 +24,7 @@ void *thread_main(std::pair<Map*, Person*> *args) {
 	int column = person.getX();
 	int line = person.getY();
 
-	while (line != 0 || column > 2) { // algorithm only go north for now
+	while (!((line == 0 && column == 0) || (line == 0 && column == 1)|| (line == 1 && column == 0))) { // algorithm only go north for now
 		auto direction = map.computeDirection(column, line);
 
 		direction = map.checkDirection(column, line, direction);
@@ -49,7 +47,6 @@ void *thread_main(std::pair<Map*, Person*> *args) {
 			column = person.getX();
 		}
 		if (!benchmark_mode) {
-			//std::lock_guard<std::mutex> lk(mt);
 			pthread_mutex_lock(&mt);
 			map.print();
 			pthread_mutex_unlock(&mt);
@@ -72,7 +69,6 @@ void *thread_main(std::pair<Map*, Person*> *args) {
 
 void init_threads(std::vector<pthread_t> &threads, Map &map) {
 	for (auto &person: map.getPeople()) {
-		//threads.emplace_back(thread_main, std::ref(map), std::ref(person));
 		pthread_t thread;
 		auto args = new std::pair<Map*, Person*>(&map, &person);
 		if (pthread_create(&thread, NULL, reinterpret_cast<void *(*)(void *)>(thread_main), args)) {
@@ -150,15 +146,6 @@ int main(int argc, char* argv[]) {
 	for (auto i = 0; i < 5; i++) {
 		run_threads(threads, map);
 	}
-
-
-	/*if (benchmark_mode) {
-		std::cout << std::fixed << std::setprecision(2) << "CPU time used: "
-        	      << 1000.0 * (c_end-c_start) / CLOCKS_PER_SEC << " ms\n"
-		      << "Wall clock time passed: "
-        	      << std::chrono::duration<double, std::milli>(t_end-t_start).count()
-        	      << " ms" << std::endl;
-	}*/
 
 	if (benchmark_mode) {
 		std::sort(walltimes.begin(), walltimes.end());

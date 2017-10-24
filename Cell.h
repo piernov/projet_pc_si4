@@ -1,8 +1,7 @@
 #ifndef _CELL_H_
 #define _CELL_H_
 
-//#include <condition_variable>
-//#include <mutex>
+
 #include <pthread.h>
 
 #include <ostream>
@@ -24,8 +23,6 @@ public:
 
 private:
 	bool state = false;
-	//std::mutex mt;
-	//std::condition_variable cv;
 	pthread_mutex_t mutex;
 	pthread_cond_t condition;
 };

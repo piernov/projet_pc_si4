@@ -52,7 +52,6 @@ void Map::print() {
 	std::cout << std::endl;
 
 	{
-		//std::shared_lock lk(mt); // read-lock unused
 
 		for (auto i = 0; i < map.size(); i++) {
 			std::cout << '#';

@@ -20,7 +20,6 @@ Cell::~Cell() {
 
 void Cell::arrive() {
 	{
-//		std::unique_lock<std::mutex> lk(mt);
 		pthread_mutex_lock(&mutex);
 		while (state) pthread_cond_wait(&condition, &mutex);
 		//cv.wait(lk, [this]() { return !state; });
@@ -29,24 +28,17 @@ void Cell::arrive() {
 
 		pthread_mutex_unlock(&mutex);
 		pthread_cond_broadcast(&condition);
-
-		//lk.unlock();
-		//cv.notify_all();
 	}
 }
 
 void Cell::depart() {
 	{
-		//std::unique_lock<std::mutex> lk(mt);
 		pthread_mutex_lock(&mutex);
-		//cv.wait(lk, [this]() { return !state; });
 
 		state = false;
 
 		pthread_mutex_unlock(&mutex);
 		pthread_cond_broadcast(&condition);
-		//lk.unlock();
-		//cv.notify_all();
 	}
 }
 
