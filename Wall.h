@@ -15,6 +15,9 @@ public:
 	void depart() override;
 	std::ostream &operator<<(std::ostream &os);
 	std::ostream &print(std::ostream &os) override ;
+	bool isReachable() override;
+
+	bool isLimit() override;
 
 };
 

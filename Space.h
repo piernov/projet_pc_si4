@@ -12,6 +12,8 @@ public:
 
 	virtual void depart() = 0;
 	virtual std::ostream &print(std::ostream &os) = 0;
+	virtual bool isReachable() = 0;
+	virtual bool isLimit() = 0;
 };
 
 

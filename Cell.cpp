@@ -60,3 +60,11 @@ std::ostream &Cell::print(std::ostream &os) {
 	return os;
 }
 
+bool Cell::isReachable() {
+	return !state;
+}
+
+bool Cell::isLimit() {
+	return false;
+}
+
