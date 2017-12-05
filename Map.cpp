@@ -1,6 +1,7 @@
 #include "Map.h"
 #include "Cell.h"
 #include "Wall.h"
+#include "CellV2.h"
 
 #include <iostream>
 #include <algorithm>
@@ -31,13 +32,34 @@ std::vector<Person> Map::init(int sqrtpeople) {
 			vec.push_back(cell);
 		}
 		map.push_back(vec);
-
 	}
+	communInit(sqrtpeople);
+	return people;
+}
 
-	makeWall(30,27,45,45);
-	makeWall(15,40,70,14);
-	makeWall(30,30,250,50);
-	makeWall(10,10,50,1);
+std::vector<Person> Map::initV2(int sqrtpeople) {
+	for (int i = 0; i < lines; ++i) {
+		std::vector<Space *> vec;
+		for (int j = 0; j < columns; ++j) {
+			if (i == 63 || i == 64 || j == 255 || j == 256) {
+				CellV2 *cell = new CellV2(true);
+				vec.push_back(cell);
+			} else {
+				CellV2 *cell = new CellV2(false);
+				vec.push_back(cell);
+			}
+		}
+		map.push_back(vec);
+	}
+	communInit(sqrtpeople);
+	return people;
+}
+
+void Map::communInit(int sqrtpeople) {
+	makeWall(30, 27, 45, 45);
+	makeWall(15, 40, 70, 14);
+	makeWall(30, 30, 250, 50);
+	makeWall(10, 10, 50, 1);
 	auto seed = time(0);
 	auto people_count = 1 << sqrtpeople; // 2^sqrtpeople
 	std::cout << "Seed: " << seed << ", people = " << people_count << std::endl;
@@ -56,9 +78,8 @@ std::vector<Person> Map::init(int sqrtpeople) {
 			peopleSections.at(getTID(std::pair<int, int>(column, line))).push_back(&person);
 		}
 	}
-
-	return people;
 }
+
 
 void Map::print() {
 	std::cout << "#  ";
@@ -125,7 +146,7 @@ std::vector<Person> &Map::getPeople() {
 }
 
 int Map::checkDirection(int x, int y, int d) {
-	for (;; d = (d+1)%3) {
+	for (;; d = (d + 1) % 3) {
 		std::pair<int, int> coor = movePerson(x, y, d);
 		Space *space = map[coor.second][coor.first];
 		if (space != nullptr && !space->isWall())
@@ -143,9 +164,10 @@ std::pair<int, int> Map::getNextPosition(int column, int line) {
 void Map::makeWall(int length, int width, int x, int y) {
 	for (int i = y; i < map.size() && i < y + length; ++i) {
 		for (int j = x; j < map.at(i).size() && j < x + width; ++j) {
-			Wall* wall = new Wall();
+			Wall *wall = new Wall();
 			map.at(i).at(j) = wall;
 		}
 	}
 
 }
+

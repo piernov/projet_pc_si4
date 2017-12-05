@@ -1,16 +1,17 @@
-#ifndef _CELL_H_
-#define _CELL_H_
+//
+// Created by Florian Bourniquel on 01/12/2017.
+//
+
+#ifndef PROJET_PC_SI4_CELLV2_H
+#define PROJET_PC_SI4_CELLV2_H
 
 
-#include <pthread.h>
-
-#include <ostream>
 #include "Space.h"
 
-class Cell : public Space {
+class CellV2 : public Space {
 public:
-	Cell();
-	~Cell();
+	CellV2(bool limit) : limit(limit) {};
+	~CellV2() = default;
 
 	void arrive() override;
 
@@ -26,8 +27,8 @@ public:
 
 private:
 	bool state = false;
-	pthread_mutex_t mutex;
-	pthread_cond_t condition;
+	bool limit;
 };
 
-#endif
+
+#endif //PROJET_PC_SI4_CELLV2_H

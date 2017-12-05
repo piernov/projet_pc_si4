@@ -13,6 +13,8 @@ class Map {
 public:
 	Map();
 	std::vector<Person> init(int sqrtpeople);
+	std::vector<Person> initV2(int sqrtpeople);
+	void communInit(int sqrtpeople);
 	std::vector<Person> &getPeople();
 	std::pair<int, int> movePerson(int x, int y, int d);
 	int checkDirection(int x, int y, int d);

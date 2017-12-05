@@ -21,3 +21,11 @@ void Wall::arrive() {
 void Wall::depart() {
 
 }
+
+bool Wall::isReachable() {
+	return false;
+}
+
+bool Wall::isLimit() {
+	return false;
+}
