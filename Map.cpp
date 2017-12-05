@@ -60,7 +60,7 @@ void Map::communInit(int sqrtpeople) {
 	makeWall(15, 40, 70, 14);
 	makeWall(30, 30, 250, 50);
 	makeWall(10, 10, 50, 1);
-	auto seed = time(0);
+	auto seed = 1512507681;//time(0);
 	auto people_count = 1 << sqrtpeople; // 2^sqrtpeople
 	std::cout << "Seed: " << seed << ", people = " << people_count << std::endl;
 	std::srand(seed);

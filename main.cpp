@@ -18,7 +18,7 @@ static int person_count = 0;
 static bool benchmark_mode = false;
 static int threads_mode = 0;
 
-static int people_not_finished = 1 << person_count;
+static int people_not_finished = 0; //1 << person_count;
 
 static std::vector<double> cputimes;
 static std::vector<double> walltimes;
@@ -44,7 +44,10 @@ void *thread_main(std::tuple<Map*, std::vector<Person*>, ConcurrentDeque*> *args
 			people.push_back(p);
 		}
 
-		for (auto &person: people) {
+		//for (auto &person: people) {
+		auto i = people.begin();
+		while (i != people.end()) { // Not using range-based for loop since we're removing elements
+			auto person = *i;
 			int column = person->getX();
 			int line = person->getY();
 
@@ -58,6 +61,8 @@ void *thread_main(std::tuple<Map*, std::vector<Person*>, ConcurrentDeque*> *args
 				person->setX(-1);
 				person->setY(-1);
 				people_not_finished--;
+				people.erase(i);
+				continue;
 			}
 
 			auto newperson = map->getNextPosition(column, line);
@@ -86,6 +91,8 @@ void *thread_main(std::tuple<Map*, std::vector<Person*>, ConcurrentDeque*> *args
 						person->setX(newpos.first);
 						person->setY(newpos.second);
 						addToFIFO(tid, person);
+						people.erase(i);
+						continue; // removing an element so we don't need to go to the next position since all following elements are shifted
 					}
 					// need to delete person from this thread's management
 				}
@@ -96,7 +103,7 @@ void *thread_main(std::tuple<Map*, std::vector<Person*>, ConcurrentDeque*> *args
 				pthread_mutex_unlock(&mt);
 			}
 
-
+			i++;
 		}
 	}
 
@@ -169,13 +176,15 @@ int main(int argc, char* argv[]) {
 
 	std::cout << "Init: benchmark_mode = " << benchmark_mode << ", threads_mode = " << threads_mode << ", person_count = " << person_count << std::endl;
 
+	people_not_finished = 1 << person_count;
+
 	// Thread pool
-	const auto threads_count = 1 << person_count;
+//	const auto threads_count = 1 << person_count;
 	std::vector<pthread_t> threads;
 	threads.reserve(4);
 
 
-	map.init(person_count);
+	map.initV2(person_count);
 	if (!benchmark_mode)
 		map.print();
 	
