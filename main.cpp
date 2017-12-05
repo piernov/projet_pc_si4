@@ -12,54 +12,85 @@
 
 static pthread_mutex_t mt;
 
+static int person_count = 0;
 static bool benchmark_mode = false;
+static int threads_mode = 0;
+
+static int people_not_finished = 1 << person_count;
 
 static std::vector<double> cputimes;
 static std::vector<double> walltimes;
 
-void *thread_main(std::pair<Map*, Person*> *args) {
-	auto map = *(args->first);
-	auto person = *(args->second);
+ConcurrentDeque fifos[4] = {};
+
+void addToFIFO(int tid, Person *p) {
+	fifos[tid].push_back(person);
+}
+
+void *thread_main(std::tuple<Map*, std::vector<Person*>, ConcurrentDeque*> *args) {
+	auto map = *(std::get<0>(args));
+	auto people = *(std::get<1>(args));
+	auto fifo = *(std::get<2>(args));
+
 
 	int column = person.getX();
 	int line = person.getY();
 
-	while (!((line == 0 && column == 0) || (line == 0 && column == 1)|| (line == 1 && column == 0))) { // algorithm only go north for now
-		auto direction = map.computeDirection(column, line);
-
-		direction = map.checkDirection(column, line, direction);
-
-		auto newperson = map.movePerson(column, line, direction);
-		auto newcolumn = newperson.first;
-		auto newline = newperson.second;
-
-		{
-			Space* oldcell = map.getCell(column, line);
-			Space* newcell = map.getCell(newcolumn, newline);
-			if (newcell != nullptr)
-				newcell->arrive();
-			if (oldcell != nullptr)
-				oldcell->depart();
-			person.setX(newcolumn);
-			person.setY(newline);
-
-			line = person.getY();
-			column = person.getX();
-		}
-		if (!benchmark_mode) {
-			pthread_mutex_lock(&mt);
-			map.print();
-			pthread_mutex_unlock(&mt);
+	while (people_not_finished) {
+		while (!fifo.isEmpty()) {
+			Person *p = fifo.pop_front();
+			people.push_back(p);
 		}
 
+		for (auto &person: people) {
+			int column = person.getX();
+			int line = person.getY();
 
-	}
-	{ // We're at the exit
-		Space* oldcell = map.getCell(column, line);
-		if (oldcell != nullptr)
-			oldcell->depart();
-		person.setX(0);
-		person.setY(0);
+			if (line == -1 ||column == -1) // end condition for one person
+				continue;
+
+			if (((line == 0 && column == 0) || (line == 0 && column == 1)|| (line == 1 && column == 0))) { //TODO: remove person 
+				Space* oldcell = map.getCell(column, line);
+				if (oldcell != nullptr)
+					oldcell->depart();
+				person.setX(-1);
+				person.setY(-1);
+				people_not_finished--;
+			}
+
+			auto newperson = map.getNextPosition(column, line);
+			auto newcolumn = newperson.first;
+			auto newline = newperson.second;
+
+			{
+				Space* oldcell = map.getCell(column, line);
+				Space* newcell = map.getCell(newcolumn, newline);
+				if (threads_mode == 1 && !newcell.isReachable()) // v2
+					continue;
+				if (newcell != nullptr)
+					newcell->arrive();
+				if (oldcell != nullptr)
+					oldcell->depart();
+				person.setX(newcolumn);
+				person.setY(newline);
+
+				line = person.getY();
+				column = person.getX();
+
+				if (threads_mode == 1 && newcell.isLimit()) { // v2
+					auto newperson = map.getNextPosition(column, line);
+					auto tid = map.getTID(newperson);
+					addToFIFO(tid, newperson);
+				}
+			}
+			if (!benchmark_mode) {
+				pthread_mutex_lock(&mt);
+				map.print();
+				pthread_mutex_unlock(&mt);
+			}
+
+
+		}
 	}
 
 	delete args;
@@ -68,9 +99,10 @@ void *thread_main(std::pair<Map*, Person*> *args) {
 }
 
 void init_threads(std::vector<pthread_t> &threads, Map &map) {
-	for (auto &person: map.getPeople()) {
+	for (auto i = 0; i < 4; i++) {
+	//for (auto &person: map.getPeople()) {
 		pthread_t thread;
-		auto args = new std::pair<Map*, Person*>(&map, &person);
+		auto args = new std::tuple<Map*, std::vector<Person*>, ConcurrentDeque*>(&map, &person, &fifos[i]);
 		if (pthread_create(&thread, NULL, reinterpret_cast<void *(*)(void *)>(thread_main), args)) {
 			std::cerr << "pthread_create" << std::endl;
 			exit(1);
@@ -110,9 +142,6 @@ int main(int argc, char* argv[]) {
 	}
 
 	// Command line parameters parsing
-	int threads_mode = 0;
-	int person_count = 0;
-
 	for (int i = 0; i < argc; i++) {
 		auto arg = argv[i];
 		if (arg[0] != '-') continue;
@@ -136,7 +165,7 @@ int main(int argc, char* argv[]) {
 	// Thread pool
 	const auto threads_count = 1 << person_count;
 	std::vector<pthread_t> threads;
-	threads.reserve(threads_count);
+	threads.reserve(4);
 
 
 	map.init(person_count);

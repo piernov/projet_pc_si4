@@ -6,9 +6,21 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <ctime>
 
 
 Map::Map() {
+}
+
+int Map::getTID(std::pair<int, int> location) const {
+	if (location.first < 256 && location.second < 128)
+		return 0;
+	else if (location.first >= 256 && location.second < 128)
+		return 1;
+	else if (location.first < 256 && location.second >= 128)
+		return 2;
+	else
+		return 3;
 }
 
 std::vector<Person> Map::init(int sqrtpeople) {
@@ -40,6 +52,8 @@ std::vector<Person> Map::init(int sqrtpeople) {
 			people.emplace_back(person);
 			people_count--;
 			map[line][column]->arrive();
+
+			peopleSections.at(getTID(std::pair<int, int>(column, line))).push_back(&person);
 		}
 	}
 
@@ -118,6 +132,12 @@ int Map::checkDirection(int x, int y, int d) {
 			break;
 	}
 	return d;
+}
+
+std::pair<int, int> Map::getNextPosition(int column, int line) {
+	auto direction = computeDirection(column, line);
+	direction = checkDirection(column, line, direction);
+	return movePerson(column, line, direction);
 }
 
 void Map::makeWall(int length, int width, int x, int y) {

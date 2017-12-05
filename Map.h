@@ -18,7 +18,10 @@ public:
 	int checkDirection(int x, int y, int d);
 	Space * getCell(int x, int y);
 	int computeDirection(int x, int y);
+	std::pair<int, int> getNextPosition(int column, int line);
 	void makeWall(int length, int width, int x, int y);
+
+	int getTID(std::pair<int, int> location) const;
 
 	void print();
 private:
@@ -28,6 +31,8 @@ private:
 	std::vector<std::vector<Space*>> map;
 	std::vector<Person> people{};
 	std::array<std::pair<int, int>, 2> mapExit = {{ { 0, 0 }, { 1, 0} }};
+
+	std::array<std::vector<Person *>, 4> peopleSections = {};
 
 };
 
