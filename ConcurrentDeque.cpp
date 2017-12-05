@@ -14,21 +14,21 @@ ConcurrentDeque::ConcurrentDeque() {
 
 Person * ConcurrentDeque::pop_front() {
 	pthread_mutex_lock(&mutex);
-	Person* person = deque.front();
-	deque.pop_front();
+	Person* person = m_deque.front();
+	m_deque.pop_front();
 	pthread_mutex_unlock(&mutex);
 	return person;
 }
 
 void ConcurrentDeque::push_back(Person *person) {
 	pthread_mutex_lock(&mutex);
-	deque.push_back(person);
+	m_deque.push_back(person);
 	pthread_mutex_unlock(&mutex);
 }
 
 bool ConcurrentDeque::isEmpty() {
 	pthread_mutex_lock(&mutex);
-	bool tmp = deque.empty();
+	bool tmp = m_deque.empty();
 	pthread_mutex_unlock(&mutex);
 	return tmp;
 }

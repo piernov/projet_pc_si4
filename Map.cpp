@@ -14,20 +14,20 @@ Map::Map() {
 }
 
 int Map::getTID(std::pair<int, int> location) const {
-	if (location.first < 256 && location.second < 128)
+	if (location.first < 256 && location.second < 64)
 		return 0;
-	else if (location.first >= 256 && location.second < 128)
+	else if (location.first >= 256 && location.second < 64)
 		return 1;
-	else if (location.first < 256 && location.second >= 128)
+	else if (location.first < 256 && location.second >= 64)
 		return 2;
 	else
 		return 3;
 }
 
 std::vector<Person> Map::init(int sqrtpeople) {
-	for (int i = 0; i < lines; ++i) {
+	for (size_t i = 0; i < lines; ++i) {
 		std::vector<Space *> vec;
-		for (int j = 0; j < columns; ++j) {
+		for (size_t  j = 0; j < columns; ++j) {
 			Cell *cell = new Cell();
 			vec.push_back(cell);
 		}
@@ -38,9 +38,9 @@ std::vector<Person> Map::init(int sqrtpeople) {
 }
 
 std::vector<Person> Map::initV2(int sqrtpeople) {
-	for (int i = 0; i < lines; ++i) {
+	for (size_t i = 0; i < lines; ++i) {
 		std::vector<Space *> vec;
-		for (int j = 0; j < columns; ++j) {
+		for (size_t  j = 0; j < columns; ++j) {
 			if (i == 63 || i == 64 || j == 255 || j == 256) {
 				CellV2 *cell = new CellV2(true);
 				vec.push_back(cell);
@@ -88,10 +88,10 @@ void Map::print() {
 
 	{
 
-		for (auto i = 0; i < map.size(); i++) {
+		for (size_t i = 0; i < map.size(); i++) {
 			std::cout << '#';
 
-			for (auto j = 0; j < map[i].size(); j++) {
+			for (size_t j = 0; j < map[i].size(); j++) {
 				if (map[i][j] != nullptr)
 					map[i][j]->print(std::cout);
 			}
@@ -141,8 +141,13 @@ int Map::computeDirection(int x, int y) {
 	}
 }
 
-std::vector<Person> &Map::getPeople() {
-	return people;
+std::vector<Person*> Map::getPeople(int i) {
+	std::vector<Person*> thread_people = {};
+	for (auto &p: people) {
+		if (getTID(std::pair<int, int>(p.getX(), p.getY())) == i)
+			thread_people.push_back(&p);
+	}
+	return thread_people;
 }
 
 int Map::checkDirection(int x, int y, int d) {
@@ -162,8 +167,8 @@ std::pair<int, int> Map::getNextPosition(int column, int line) {
 }
 
 void Map::makeWall(int length, int width, int x, int y) {
-	for (int i = y; i < map.size() && i < y + length; ++i) {
-		for (int j = x; j < map.at(i).size() && j < x + width; ++j) {
+	for (size_t i = y; i < map.size() && i < y + length; ++i) {
+		for (size_t j = x; j < map.at(i).size() && j < x + width; ++j) {
 			Wall *wall = new Wall();
 			map.at(i).at(j) = wall;
 		}

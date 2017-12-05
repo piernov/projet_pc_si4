@@ -22,7 +22,7 @@ public:
 
 private:
 	pthread_mutex_t mutex;
-	deque<Person*> deque = {};
+	deque<Person*> m_deque = {};
 };
 
 

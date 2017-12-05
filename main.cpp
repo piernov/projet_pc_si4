@@ -6,7 +6,9 @@
 #include <pthread.h>
 #include <iomanip>
 #include <algorithm>
+#include <tuple>
 
+#include "ConcurrentDeque.h"
 #include "Map.h"
 
 
@@ -24,68 +26,73 @@ static std::vector<double> walltimes;
 ConcurrentDeque fifos[4] = {};
 
 void addToFIFO(int tid, Person *p) {
-	fifos[tid].push_back(person);
+	fifos[tid].push_back(p);
 }
 
 void *thread_main(std::tuple<Map*, std::vector<Person*>, ConcurrentDeque*> *args) {
-	auto map = *(std::get<0>(args));
-	auto people = *(std::get<1>(args));
-	auto fifo = *(std::get<2>(args));
-
-
-	int column = person.getX();
-	int line = person.getY();
+	if (args == nullptr) {
+		std::cerr << "thread_main args is null" << std::endl;
+		exit(1);
+	}
+	auto map = std::get<0>(*args);
+	auto people = std::get<1>(*args);
+	auto fifo = std::get<2>(*args);
 
 	while (people_not_finished) {
-		while (!fifo.isEmpty()) {
-			Person *p = fifo.pop_front();
+		while (!fifo->isEmpty()) {
+			Person *p = fifo->pop_front();
 			people.push_back(p);
 		}
 
 		for (auto &person: people) {
-			int column = person.getX();
-			int line = person.getY();
+			int column = person->getX();
+			int line = person->getY();
 
 			if (line == -1 ||column == -1) // end condition for one person
 				continue;
 
 			if (((line == 0 && column == 0) || (line == 0 && column == 1)|| (line == 1 && column == 0))) { //TODO: remove person 
-				Space* oldcell = map.getCell(column, line);
+				Space* oldcell = map->getCell(column, line);
 				if (oldcell != nullptr)
 					oldcell->depart();
-				person.setX(-1);
-				person.setY(-1);
+				person->setX(-1);
+				person->setY(-1);
 				people_not_finished--;
 			}
 
-			auto newperson = map.getNextPosition(column, line);
+			auto newperson = map->getNextPosition(column, line);
 			auto newcolumn = newperson.first;
 			auto newline = newperson.second;
 
 			{
-				Space* oldcell = map.getCell(column, line);
-				Space* newcell = map.getCell(newcolumn, newline);
-				if (threads_mode == 1 && !newcell.isReachable()) // v2
+				Space* oldcell = map->getCell(column, line);
+				Space* newcell = map->getCell(newcolumn, newline);
+				if (threads_mode == 1 && newcell != nullptr && !newcell->isReachable()) // v2
 					continue;
 				if (newcell != nullptr)
 					newcell->arrive();
 				if (oldcell != nullptr)
 					oldcell->depart();
-				person.setX(newcolumn);
-				person.setY(newline);
+				person->setX(newcolumn);
+				person->setY(newline);
 
-				line = person.getY();
-				column = person.getX();
-
-				if (threads_mode == 1 && newcell.isLimit()) { // v2
-					auto newperson = map.getNextPosition(column, line);
-					auto tid = map.getTID(newperson);
-					addToFIFO(tid, newperson);
+				if (threads_mode == 1 && newcell->isLimit()) { // v2
+					auto newpos = map->getNextPosition(column, line);
+					auto tid = map->getTID(newperson);
+					auto nextcell = map->getCell(newpos.first, newpos.second);
+					if (nextcell != nullptr && nextcell->isLimit()) {
+						newcell->arrive();
+						oldcell->depart();
+						person->setX(newpos.first);
+						person->setY(newpos.second);
+						addToFIFO(tid, person);
+					}
+					// need to delete person from this thread's management
 				}
 			}
 			if (!benchmark_mode) {
 				pthread_mutex_lock(&mt);
-				map.print();
+				map->print();
 				pthread_mutex_unlock(&mt);
 			}
 
@@ -102,7 +109,7 @@ void init_threads(std::vector<pthread_t> &threads, Map &map) {
 	for (auto i = 0; i < 4; i++) {
 	//for (auto &person: map.getPeople()) {
 		pthread_t thread;
-		auto args = new std::tuple<Map*, std::vector<Person*>, ConcurrentDeque*>(&map, &person, &fifos[i]);
+		auto args = new std::tuple<Map*, std::vector<Person*>, ConcurrentDeque*>(&map, map.getPeople(i), &fifos[i]);
 		if (pthread_create(&thread, NULL, reinterpret_cast<void *(*)(void *)>(thread_main), args)) {
 			std::cerr << "pthread_create" << std::endl;
 			exit(1);
