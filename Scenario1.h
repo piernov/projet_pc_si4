@@ -14,8 +14,8 @@ private:
 	void init_threads();
 	void run_threads();
 
-	static int people_remaining;
 public:
+	static int people_remaining;
 	Scenario1(Map &map);
 	~Scenario1() {};
 

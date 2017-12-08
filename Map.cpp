@@ -58,7 +58,7 @@ void Map::communInit(int people_count) {
 	makeWall(15, 40, 70, 14);
 	makeWall(30, 30, 250, 50);
 	makeWall(10, 10, 50, 1);
-	auto seed = time(0);
+	auto seed = 1512743863/*time(0)*/;
 	std::cout << "Seed: " << seed << ", people = " << people_count << std::endl;
 	std::srand(seed);
 

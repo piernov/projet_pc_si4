@@ -10,9 +10,29 @@ bool Scenario::benchmark_mode = false;
 pthread_mutex_t Scenario::mt;
 int Scenario1::people_remaining = 0;
 
+pthread_mutex_t counter_mutex;
+
+int getcounter() {
+	pthread_mutex_lock(&counter_mutex);
+	int tmp = Scenario1::people_remaining;
+	pthread_mutex_unlock(&counter_mutex);
+	return tmp;
+}
+
+void decrcounter() {
+	pthread_mutex_lock(&counter_mutex);
+	Scenario1::people_remaining--;
+	pthread_mutex_unlock(&counter_mutex);
+}
+
 Scenario1::Scenario1(Map &map) : Scenario(map) {
 	threads.reserve(4);
 	people_remaining = map.getPeopleCount();
+
+	if(pthread_mutex_init(&counter_mutex, NULL) != 0) {
+		std::cerr << "pthread_mutex_init" << std::endl;
+		exit(1);
+	}
 }
 
 void *Scenario1::thread_main(std::tuple<Map*, std::vector<Person*>, std::array<ConcurrentDeque*, 4>*, int> *args) {
@@ -30,7 +50,7 @@ void *Scenario1::thread_main(std::tuple<Map*, std::vector<Person*>, std::array<C
 	auto this_tid = std::get<3>(*args);
 	auto fifo = fifos->at(this_tid);
 
-	while (people_remaining) {
+	while (getcounter()) {
 		while (!fifo->isEmpty()) {
 			Person *p = fifo->pop_front();
 			people.push_back(p);
@@ -52,7 +72,7 @@ void *Scenario1::thread_main(std::tuple<Map*, std::vector<Person*>, std::array<C
 				person->setX(-1);
 				person->setY(-1);
 
-				people_remaining--;
+				decrcounter();
 				people.erase(i);
 				continue;
 			}
