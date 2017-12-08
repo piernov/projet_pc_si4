@@ -61,7 +61,9 @@ int main(int argc, char* argv[]) {
 
 	// Run scenario
 	
-	for (auto i = 0; i < 1; i++) {
+	int exec_number = 1;
+	if (args.benchmark_mode) exec_number = 5;
+	for (auto i = 0; i < exec_number; i++) {
 		Map tmpMap = map;
 		std::unique_ptr<Scenario> scenario;
 	
