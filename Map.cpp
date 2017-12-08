@@ -58,7 +58,7 @@ void Map::communInit(int people_count) {
 	makeWall(15, 40, 70, 14);
 	makeWall(30, 30, 250, 50);
 	makeWall(10, 10, 50, 1);
-	auto seed = 1512507681;//time(0);
+	auto seed = time(0);
 	std::cout << "Seed: " << seed << ", people = " << people_count << std::endl;
 	std::srand(seed);
 
@@ -173,10 +173,4 @@ void Map::makeWall(int length, int width, int x, int y) {
 
 int Map::getPeopleCount() const {
 	return people.size();
-}
-
-int Map::getRemainingPeople() const {
-	return std::count_if(people.begin(), people.end(), [](const Person &p){
-			//printf("%d %d\n", p.getX(), p.getY());
-			return p.getX() != 0 || p.getY() != 0;});
 }

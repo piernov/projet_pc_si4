@@ -25,7 +25,6 @@ public:
 
 	int getTID(std::pair<int, int> location) const;
 	int getPeopleCount() const;
-	int getRemainingPeople() const;
 
 	void print();
 private:

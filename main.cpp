@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
 
 	// Run scenario
 	
-	for (auto i = 0; i < 5; i++) {
+	for (auto i = 0; i < 1; i++) {
 		Map tmpMap = map;
 		std::unique_ptr<Scenario> scenario;
 	

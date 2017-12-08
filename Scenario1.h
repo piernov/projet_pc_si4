@@ -13,6 +13,8 @@ private:
 	static void *thread_main(std::tuple<Map*, std::vector<Person*>, std::array<ConcurrentDeque*, 4>*, int> *args); // needs to be static for pthread API
 	void init_threads();
 	void run_threads();
+
+	static int people_remaining;
 public:
 	Scenario1(Map &map);
 	~Scenario1() {};
