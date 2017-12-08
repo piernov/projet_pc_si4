@@ -24,7 +24,7 @@ int Map::getTID(std::pair<int, int> location) const {
 		return 3;
 }
 
-std::vector<Person> Map::init(int sqrtpeople) {
+void Map::init(int people_count) {
 	for (size_t i = 0; i < lines; ++i) {
 		std::vector<Space *> vec;
 		for (size_t  j = 0; j < columns; ++j) {
@@ -33,11 +33,10 @@ std::vector<Person> Map::init(int sqrtpeople) {
 		}
 		map.push_back(vec);
 	}
-	communInit(sqrtpeople);
-	return people;
+	communInit(people_count);
 }
 
-std::vector<Person> Map::initV2(int sqrtpeople) {
+void Map::initV2(int people_count) {
 	for (size_t i = 0; i < lines; ++i) {
 		std::vector<Space *> vec;
 		for (size_t  j = 0; j < columns; ++j) {
@@ -51,17 +50,15 @@ std::vector<Person> Map::initV2(int sqrtpeople) {
 		}
 		map.push_back(vec);
 	}
-	communInit(sqrtpeople);
-	return people;
+	communInit(people_count);
 }
 
-void Map::communInit(int sqrtpeople) {
+void Map::communInit(int people_count) {
 	makeWall(30, 27, 45, 45);
 	makeWall(15, 40, 70, 14);
 	makeWall(30, 30, 250, 50);
 	makeWall(10, 10, 50, 1);
 	auto seed = 1512507681;//time(0);
-	auto people_count = 1 << sqrtpeople; // 2^sqrtpeople
 	std::cout << "Seed: " << seed << ", people = " << people_count << std::endl;
 	std::srand(seed);
 
@@ -74,8 +71,6 @@ void Map::communInit(int sqrtpeople) {
 			people.emplace_back(person);
 			people_count--;
 			map[line][column]->arrive();
-
-			peopleSections.at(getTID(std::pair<int, int>(column, line))).push_back(&person);
 		}
 	}
 }
@@ -176,3 +171,12 @@ void Map::makeWall(int length, int width, int x, int y) {
 
 }
 
+int Map::getPeopleCount() const {
+	return people.size();
+}
+
+int Map::getRemainingPeople() const {
+	return std::count_if(people.begin(), people.end(), [](const Person &p){
+			//printf("%d %d\n", p.getX(), p.getY());
+			return p.getX() != 0 || p.getY() != 0;});
+}

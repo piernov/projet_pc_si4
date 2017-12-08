@@ -12,9 +12,9 @@
 class Map {
 public:
 	Map();
-	std::vector<Person> init(int sqrtpeople);
-	std::vector<Person> initV2(int sqrtpeople);
-	void communInit(int sqrtpeople);
+	void init(int people_count);
+	void initV2(int people_count);
+	void communInit(int people_count);
 	std::vector<Person*> getPeople(int i);
 	std::pair<int, int> movePerson(int x, int y, int d);
 	int checkDirection(int x, int y, int d);
@@ -24,6 +24,8 @@ public:
 	void makeWall(int length, int width, int x, int y);
 
 	int getTID(std::pair<int, int> location) const;
+	int getPeopleCount() const;
+	int getRemainingPeople() const;
 
 	void print();
 private:

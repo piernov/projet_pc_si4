@@ -9,7 +9,8 @@ add_executable(main
 	Map.cpp
 	Person.cpp
 	main.cpp
-		Space.h Wall.cpp Wall.h Space.cpp CellV2.cpp CellV2.h ConcurrentDeque.cpp ConcurrentDeque.h)
+		Space.h Wall.cpp Wall.h Space.cpp CellV2.cpp CellV2.h ConcurrentDeque.cpp ConcurrentDeque.h
+	Scenario1.cpp)
 
 target_link_libraries(main
 	pthread)

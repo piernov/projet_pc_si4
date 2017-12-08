@@ -3,157 +3,22 @@
 #include <random>
 #include <ctime>
 #include <chrono>
-#include <pthread.h>
 #include <iomanip>
 #include <algorithm>
-#include <tuple>
 
 #include "ConcurrentDeque.h"
 #include "Map.h"
+#include "Scenario0.h"
+#include "Scenario1.h"
 
+struct Args {
+	int person_count = 0;
+	int scenario = 0;
+	bool benchmark_mode = false;
+};
 
-static pthread_mutex_t mt;
-
-static int person_count = 0;
-static bool benchmark_mode = false;
-static int threads_mode = 0;
-
-static int people_not_finished = 0; //1 << person_count;
-
-static std::vector<double> cputimes;
-static std::vector<double> walltimes;
-
-ConcurrentDeque fifos[4] = {};
-
-void addToFIFO(int tid, Person *p) {
-	fifos[tid].push_back(p);
-}
-
-void *thread_main(std::tuple<Map*, std::vector<Person*>, ConcurrentDeque*> *args) {
-	if (args == nullptr) {
-		std::cerr << "thread_main args is null" << std::endl;
-		exit(1);
-	}
-	auto map = std::get<0>(*args);
-	auto people = std::get<1>(*args);
-	auto fifo = std::get<2>(*args);
-
-	while (people_not_finished) {
-		while (!fifo->isEmpty()) {
-			Person *p = fifo->pop_front();
-			people.push_back(p);
-		}
-
-		//for (auto &person: people) {
-		auto i = people.begin();
-		while (i != people.end()) { // Not using range-based for loop since we're removing elements
-			auto person = *i;
-			int column = person->getX();
-			int line = person->getY();
-
-			if (line == -1 ||column == -1) // end condition for one person
-				continue;
-
-			if (((line == 0 && column == 0) || (line == 0 && column == 1)|| (line == 1 && column == 0))) { //TODO: remove person 
-				Space* oldcell = map->getCell(column, line);
-				if (oldcell != nullptr)
-					oldcell->depart();
-				person->setX(-1);
-				person->setY(-1);
-				people_not_finished--;
-				people.erase(i);
-				continue;
-			}
-
-			auto newperson = map->getNextPosition(column, line);
-			auto newcolumn = newperson.first;
-			auto newline = newperson.second;
-
-			{
-				Space* oldcell = map->getCell(column, line);
-				Space* newcell = map->getCell(newcolumn, newline);
-				if (threads_mode == 1 && newcell != nullptr && !newcell->isReachable()) // v2
-					continue;
-				if (newcell != nullptr)
-					newcell->arrive();
-				if (oldcell != nullptr)
-					oldcell->depart();
-				person->setX(newcolumn);
-				person->setY(newline);
-
-				if (threads_mode == 1 && newcell->isLimit()) { // v2
-					auto newpos = map->getNextPosition(column, line);
-					auto tid = map->getTID(newperson);
-					auto nextcell = map->getCell(newpos.first, newpos.second);
-					if (nextcell != nullptr && nextcell->isLimit()) {
-						newcell->arrive();
-						oldcell->depart();
-						person->setX(newpos.first);
-						person->setY(newpos.second);
-						addToFIFO(tid, person);
-						people.erase(i);
-						continue; // removing an element so we don't need to go to the next position since all following elements are shifted
-					}
-					// need to delete person from this thread's management
-				}
-			}
-			if (!benchmark_mode) {
-				pthread_mutex_lock(&mt);
-				map->print();
-				pthread_mutex_unlock(&mt);
-			}
-
-			i++;
-		}
-	}
-
-	delete args;
-	args = nullptr;
-	return nullptr;
-}
-
-void init_threads(std::vector<pthread_t> &threads, Map &map) {
-	for (auto i = 0; i < 4; i++) {
-	//for (auto &person: map.getPeople()) {
-		pthread_t thread;
-		auto args = new std::tuple<Map*, std::vector<Person*>, ConcurrentDeque*>(&map, map.getPeople(i), &fifos[i]);
-		if (pthread_create(&thread, NULL, reinterpret_cast<void *(*)(void *)>(thread_main), args)) {
-			std::cerr << "pthread_create" << std::endl;
-			exit(1);
-		}
-		threads.push_back(std::move(thread));
-	}
-}
-
-void run_threads(std::vector<pthread_t> &threads, Map map) {
-	std::clock_t c_start = std::clock();
-	auto t_start = std::chrono::high_resolution_clock::now();
-
-	init_threads(threads, map);
-	for (auto &thread: threads)
-		pthread_join(thread, NULL);
-
-	threads.clear();
-
-	std::clock_t c_end = std::clock();
-	auto t_end = std::chrono::high_resolution_clock::now();
-
-	auto cputime = 1000.0 * (c_end-c_start) / CLOCKS_PER_SEC;
-	auto walltime = std::chrono::duration<double, std::milli>(t_end-t_start).count();
-
-	cputimes.push_back(cputime);
-	walltimes.push_back(walltime);
-}
-
-int main(int argc, char* argv[]) {
-	// Map declaration
-	Map map;
-
-	// Init display mutex
-	if(pthread_mutex_init(&mt, NULL) != 0) {
-		std::cerr << "pthread_mutex_init" << std::endl;
-		exit(1);
-	}
+Args parse_args(int argc, char *argv[]) {
+	Args args;
 
 	// Command line parameters parsing
 	for (int i = 0; i < argc; i++) {
@@ -161,51 +26,71 @@ int main(int argc, char* argv[]) {
 		if (arg[0] != '-') continue;
 		switch (arg[1]) {
 			case 'p':
-				person_count = arg[2] - '0';
+				args.person_count = 1 << (arg[2] - '0');
 				break;
 			case 't':
-				threads_mode = arg[2] - '0';
+				args.scenario = arg[2] - '0';
 				break;
 			case 'm':
-				benchmark_mode = true;
+				args.benchmark_mode = true;
 				break;
 			default:
 				continue;
 		}
 	}
 
-	std::cout << "Init: benchmark_mode = " << benchmark_mode << ", threads_mode = " << threads_mode << ", person_count = " << person_count << std::endl;
+	std::cout << "Init: benchmark_mode = " << args.benchmark_mode << ", threads_mode = " << args.scenario << ", person_count = " << args.person_count << std::endl;
 
-	people_not_finished = 1 << person_count;
+	return args;
+}
 
-	// Thread pool
-//	const auto threads_count = 1 << person_count;
-	std::vector<pthread_t> threads;
-	threads.reserve(4);
+int main(int argc, char* argv[]) {
+	auto args = parse_args(argc, argv);
+	std::vector<double> cputimes;
+	std::vector<double> walltimes;
+	Map map;
 
 
-	map.initV2(person_count);
-	if (!benchmark_mode)
+	// Map & initialization
+	map.initV2(args.person_count);
+	if (!args.benchmark_mode)
 		map.print();
 	
+
+	// Run scenario
+	
 	for (auto i = 0; i < 5; i++) {
-		run_threads(threads, map);
+		Map tmpMap = map;
+		std::unique_ptr<Scenario> scenario;
+	
+		switch (args.scenario) {
+			default:
+#if 0
+			case 0:
+				scenario = std::unique_ptr<Scenario>(new Scenario0(tmpMap));
+				break;
+#endif
+			case 1:
+				scenario = std::unique_ptr<Scenario>(new Scenario1(tmpMap));
+				break;
+		}
+
+		scenario->setBenchmarkMode(args.benchmark_mode);
+		scenario->run();
+		walltimes.push_back(scenario->getCPUTime());
+		cputimes.push_back(scenario->getWallTime());
 	}
 
-	if (benchmark_mode) {
+	if (args.benchmark_mode) {
 		std::sort(walltimes.begin(), walltimes.end());
 		std::sort(cputimes.begin(), cputimes.end());
 
 		auto walltimemean = (walltimes[1] + walltimes[2] + walltimes[3]) / 3;
 		auto cputimemean = (cputimes[1] + cputimes[2] + cputimes[3]) / 3;
 
-
 		std::cout << std::fixed << std::setprecision(2) << "CPU time used: " << cputimemean << " ms" << std::endl;
 		std::cout << "Wall clock time passed: " << walltimemean << " ms" << std::endl;
 	}
-
-	// Destroy display mutex
-	pthread_mutex_destroy(&mt);
 
 	return 0;
 }
