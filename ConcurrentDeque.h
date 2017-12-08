@@ -19,7 +19,10 @@ public:
 	Person* pop_front();
  	void push_back(Person* person);
 	bool isEmpty();
-
+	int size() {
+		return m_deque.size();
+	
+	}
 private:
 	pthread_mutex_t mutex;
 	deque<Person*> m_deque = {};

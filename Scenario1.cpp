@@ -13,7 +13,7 @@ Scenario1::Scenario1(Map &map) : Scenario(map) {
 	threads.reserve(4);
 }
 
-void *Scenario1::thread_main(std::tuple<Map*, std::vector<Person*>, std::array<ConcurrentDeque, 4>*, int> *args) {
+void *Scenario1::thread_main(std::tuple<Map*, std::vector<Person*>, std::array<ConcurrentDeque*, 4>*, int> *args) {
 	if (args == nullptr) {
 		std::cerr << "thread_main args is null" << std::endl;
 		exit(1);
@@ -27,18 +27,23 @@ void *Scenario1::thread_main(std::tuple<Map*, std::vector<Person*>, std::array<C
 	auto fifos = std::get<2>(*args);
 	auto this_tid = std::get<3>(*args);
 	auto fifo = fifos->at(this_tid);
+	printf("%d\n", this_tid);
 
 	while (map.getRemainingPeople()) {
-		//printf("%d\n", map.getRemainingPeople());
-
-		while (!fifo.isEmpty()) {
-			Person *p = fifo.pop_front();
+	//	printf("sqdd %d %d\n", this_tid, fifo->isEmpty());
+		while (!fifo->isEmpty()) {
+			printf("meow\n");
+			Person *p = fifo->pop_front();
 			people.push_back(p);
+			printf("meow %d\n", people.size());
+			printf("%d %d\n", people.at(0)->getX(), people.at(0)->getY());
 		}
+		//printf("nyan %d %d\n", people.size(), map.getRemainingPeople());
 
 		//for (auto &person: people) {
 		auto i = people.begin();
 		while (i != people.end()) { // Not using range-based for loop since we're removing elements
+		//	printf("asafda\n");
 			auto person = *i;
 			int column = person->getX();
 			int line = person->getY();
@@ -64,25 +69,32 @@ void *Scenario1::thread_main(std::tuple<Map*, std::vector<Person*>, std::array<C
 			{
 				Space* oldcell = map.getCell(column, line);
 				Space* newcell = map.getCell(newcolumn, newline);
-				if (newcell != nullptr && !newcell->isReachable()) // v2
+				if (newcell != nullptr && !newcell->isReachable()) {
+					i++;
 					continue;
+				}
 				if (newcell != nullptr)
 					newcell->arrive();
 				if (oldcell != nullptr)
 					oldcell->depart();
 				person->setX(newcolumn);
 				person->setY(newline);
+				printf("test32: %d %d\n", person->getX(), person->getY());
 
 				if (newcell->isLimit()) { // v2
-					auto newpos = map.getNextPosition(column, line);
-					auto tid = map.getTID(newperson);
+					auto newpos = map.getNextPosition(newcolumn, newline);
+					auto tid = map.getTID(newpos);
+					printf("%d %d dd\n", tid, this_tid);
 					auto nextcell = map.getCell(newpos.first, newpos.second);
 					if (nextcell != nullptr && nextcell->isLimit()) {
-						newcell->arrive();
-						oldcell->depart();
+						nextcell->arrive();
+						newcell->depart();
 						person->setX(newpos.first);
 						person->setY(newpos.second);
-						fifos->at(tid).push_back(person);
+						fifos->at(tid)->push_back(person);
+						printf("%d %d\n", person->getX(), person->getY());
+
+						printf("ssdsdsdsd %d\n", fifos->at(tid)->size());
 						people.erase(i);
 						continue; // removing an element so we don't need to go to the next position since all following elements are shifted
 					}
@@ -106,7 +118,7 @@ void Scenario1::init_threads() {
 	for (auto i = 0; i < 4; i++) {
 	//for (auto &person: map.getPeople()) {
 		pthread_t thread;
-		auto args = new std::tuple<Map*, std::vector<Person*>, std::array<ConcurrentDeque, 4>*, int>(&map, map.getPeople(i), &fifos, i); // map, people for this thread, fifos, thread id
+		auto args = new std::tuple<Map*, std::vector<Person*>, std::array<ConcurrentDeque*, 4>*, int>(&map, map.getPeople(i), &fifos, i); // map, people for this thread, fifos, thread id
 		if (pthread_create(&thread, NULL, reinterpret_cast<void *(*)(void *)>(thread_main), args)) {
 			std::cerr << "pthread_create" << std::endl;
 			exit(1);
