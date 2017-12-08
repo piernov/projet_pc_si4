@@ -26,7 +26,7 @@ Args parse_args(int argc, char *argv[]) {
 		if (arg[0] != '-') continue;
 		switch (arg[1]) {
 			case 'p':
-				args.person_count = 1 << (arg[2] - '0');
+				args.person_count = arg[2] - '0';
 				break;
 			case 't':
 				args.scenario = arg[2] - '0';
@@ -38,6 +38,8 @@ Args parse_args(int argc, char *argv[]) {
 				continue;
 		}
 	}
+
+	args.person_count = 1 << args.person_count;
 
 	std::cout << "Init: benchmark_mode = " << args.benchmark_mode << ", threads_mode = " << args.scenario << ", person_count = " << args.person_count << std::endl;
 
