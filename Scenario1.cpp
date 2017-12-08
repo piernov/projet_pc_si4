@@ -63,7 +63,7 @@ void *Scenario1::thread_main(std::tuple<Map*, std::vector<Person*>, std::array<C
 			int line = person->getY();
 
 			if (line == -1 ||column == -1) // end condition for one person
-				continue;
+				continue;//TODO: useless since person is deleted from list
 
 			if (((line == 0 && column == 0) || (line == 0 && column == 1)|| (line == 1 && column == 0))) { //TODO: remove person 
 				Space* oldcell = map.getCell(column, line);
@@ -99,11 +99,11 @@ void *Scenario1::thread_main(std::tuple<Map*, std::vector<Person*>, std::array<C
 					auto newpos = map.getNextPosition(newcolumn, newline);
 					auto tid = map.getTID(newpos);
 					auto nextcell = map.getCell(newpos.first, newpos.second);
-					if (nextcell != nullptr && nextcell->isLimit()) {
-						nextcell->arrive();
+					if (nextcell != nullptr && nextcell->isLimit()) { // check if we cross the limit (this_tid != tid)
+						/*nextcell->arrive();
 						newcell->depart();
 						person->setX(newpos.first);
-						person->setY(newpos.second);
+						person->setY(newpos.second);*/
 						fifos->at(tid)->push_back(person);
 
 						people.erase(i);
