@@ -16,6 +16,7 @@ public:
 	void initV2(int people_count);
 	void communInit(int people_count);
 	std::vector<Person*> getPeople(int i);
+	std::vector<Person*> getPeople();
 	std::pair<int, int> movePerson(int x, int y, int d);
 	int checkDirection(int x, int y, int d);
 	Space * getCell(int x, int y);

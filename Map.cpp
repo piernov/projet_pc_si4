@@ -136,6 +136,15 @@ int Map::computeDirection(int x, int y) {
 	}
 }
 
+// get pointers to people on all the map
+std::vector<Person*> Map::getPeople() {
+	std::vector<Person*> ppl = {};
+	for (auto &p: people)
+		ppl.push_back(&p);
+	return ppl;
+}
+
+// get people on a specific quarter of the map
 std::vector<Person*> Map::getPeople(int i) {
 	std::vector<Person*> thread_people = {};
 	for (auto &p: people) {

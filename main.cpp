@@ -54,7 +54,15 @@ int main(int argc, char* argv[]) {
 
 
 	// Map & initialization
-	map.initV2(args.person_count);
+	switch (args.scenario) {
+		default:
+		case 0:
+			map.init(args.person_count);
+			break;
+		case 1:
+			map.initV2(args.person_count);
+			break;
+	}
 	if (!args.benchmark_mode)
 		map.print();
 	
@@ -69,11 +77,9 @@ int main(int argc, char* argv[]) {
 	
 		switch (args.scenario) {
 			default:
-#if 0
 			case 0:
 				scenario = std::unique_ptr<Scenario>(new Scenario0(tmpMap));
 				break;
-#endif
 			case 1:
 				scenario = std::unique_ptr<Scenario>(new Scenario1(tmpMap));
 				break;

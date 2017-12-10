@@ -7,6 +7,8 @@
 
 #include "Map.h"
 
+// should be used like a singleton: only one instance at a time since it unfortunatel relies on static members
+// due to pthread interface not accepting member function for new threads
 class Scenario {
 protected:
 	Map &map;
@@ -33,14 +35,13 @@ public:
 		pthread_mutex_destroy(&mt);
 	}
 
-	virtual void init() = 0;
 	virtual void run() = 0;
 
 	void setBenchmarkMode(bool m) {
 		benchmark_mode = m;
 	}
 
-	static void printMap(Map &map) {
+	static void printMap(Map &map) { // static because called from thread_main
 		pthread_mutex_lock(&mt);
 		map.print();
 		pthread_mutex_unlock(&mt);

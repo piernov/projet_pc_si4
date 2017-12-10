@@ -6,20 +6,17 @@
 #include <ctime>
 #include <chrono>
 
-bool Scenario::benchmark_mode = false;
-pthread_mutex_t Scenario::mt;
 int Scenario1::people_remaining = 0;
+pthread_mutex_t Scenario1::counter_mutex;
 
-pthread_mutex_t counter_mutex;
-
-int getcounter() {
+int Scenario1::getcounter() {
 	pthread_mutex_lock(&counter_mutex);
 	int tmp = Scenario1::people_remaining;
 	pthread_mutex_unlock(&counter_mutex);
 	return tmp;
 }
 
-void decrcounter() {
+void Scenario1::decrcounter() {
 	pthread_mutex_lock(&counter_mutex);
 	Scenario1::people_remaining--;
 	pthread_mutex_unlock(&counter_mutex);
@@ -33,6 +30,10 @@ Scenario1::Scenario1(Map &map) : Scenario(map) {
 		std::cerr << "pthread_mutex_init" << std::endl;
 		exit(1);
 	}
+}
+
+Scenario1::~Scenario1() {
+	pthread_mutex_destroy(&counter_mutex);
 }
 
 void *Scenario1::thread_main(std::tuple<Map*, std::vector<Person*>, std::array<ConcurrentDeque*, 4>*, int> *args) {
