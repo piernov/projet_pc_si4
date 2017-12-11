@@ -87,8 +87,8 @@ int main(int argc, char* argv[]) {
 
 		scenario->setBenchmarkMode(args.benchmark_mode);
 		scenario->run();
-		walltimes.push_back(scenario->getCPUTime());
-		cputimes.push_back(scenario->getWallTime());
+		walltimes.push_back(scenario->getWallTime());
+		cputimes.push_back(scenario->getCPUTime());
 	}
 
 	if (args.benchmark_mode) {
